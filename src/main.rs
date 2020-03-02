@@ -1,3 +1,4 @@
+use reqwest::{Error};
 use scraper::{Html, Selector};
 use regex::Regex;
 
@@ -34,48 +35,47 @@ where T: Client {
         }
     }
 
-    pub fn get_menu_items(&self, _max_items_num: i32) -> Vec<MenuItem> {
-        vec![]
+    pub async fn get_menu_items(&self, _max_items_num: i32) -> Result<Vec<MenuItem>, Error> {
+        let body = self._page_client.get_subpage_html_body(self._page_config._relative_uri).await?;
+        let doc = Html::parse_document(&body);
+
+        let mut _page_menu_items: Vec<MenuItem> = vec![];
+
+        let _a_value_selector = Regex::new(r">(.*?)</a>").unwrap();
+        for element in doc.select(&self._page_config._menu_items_selector) {
+            let _element_as_html = element.html();
+            let _dish_relative_path = element.value().attr("href").unwrap();
+
+            let _dish_name = _a_value_selector.captures(&_element_as_html).unwrap().get(1).unwrap().as_str();
+            _page_menu_items.push(MenuItem { _dish_name: _dish_name.to_owned(), _dish_relative_path: _dish_relative_path.to_owned() })
+        }
+
+        let _next_page_uri = doc.select(&self._page_config._next_page_selector).next().unwrap();
+        println!("res: {:?}", _next_page_uri.value());
+
+        Ok(_page_menu_items)
     }
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let _home_uri = "https://www.kwestiasmaku.com";
+
     let _main_dishes_config = PageConfig {
         _relative_uri: "/blog-kulinarny/category/dania-obiadowe",
         _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
-        _next_page_selector: Selector::parse(".views-field-title a").unwrap() // Temporary
+        _next_page_selector: Selector::parse("#block-system-main .last a").unwrap()
     };
 
-    let client = KwestiasmakuClient::new(&_home_uri);
+    let _main_dishes_menu_provider = PageMenuProvider::new(
+        &_main_dishes_config,
+        KwestiasmakuClient::new(&_home_uri),
+        0
+    );
 
-    println!("{:?}", client);
-//    let _main_dishes_menu_provider = PageMenuProvider::new(
-//        &_main_dishes_config,
-//        client,
-//        0
-//    );
+    let _menu_items = _main_dishes_menu_provider.get_menu_items(0).await?;
 
-    let _main_dishes_uri = "/blog-kulinarny/category/dania-obiadowe";
-    let body = client.get_subpage_html_body(_main_dishes_uri).await?;
-
-    let doc = Html::parse_document(&body);
-
-    let selector = Selector::parse(".views-field-title a").unwrap();
-
-    let mut _page_menu_items: Vec<MenuItem> = vec![];
-
-    let _a_value_selector = Regex::new(r">(.*?)</a>").unwrap();
-    for element in doc.select(&selector) {
-        let _element_as_html = element.html();
-        let _dish_relative_path = element.value().attr("href").unwrap();
-
-        let _dish_name = _a_value_selector.captures(&_element_as_html).unwrap().get(1).unwrap().as_str();
-        _page_menu_items.push(MenuItem { _dish_name: _dish_name.to_owned(), _dish_relative_path: _dish_relative_path.to_owned() })
-    }
-
-    println!("{:?}", _page_menu_items);
+    println!("{:?}", _menu_items);
 
     Ok(())
 }
