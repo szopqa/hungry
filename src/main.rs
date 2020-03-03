@@ -9,9 +9,13 @@ use clients::{
 mod providers;
 use providers::{
     kwestiasmaku_provider::{KwestiasmakuDataProvider},
-    menu_item::{MenuItem},
     subpage_config::{SubpageConfig},
     provider::{SubpageDataProvider}
+};
+
+mod models;
+use models::{
+    dish_type_enum::{DishType}
 };
 
 #[tokio::main]
@@ -21,13 +25,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let _breakfast_config = SubpageConfig {
         _relative_uri: String::from("/dania_dla_dwojga/sniadania/przepisy.html"),
         _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
-        _next_page_selector: Selector::parse("#block-system-main .last a").unwrap()
+        _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
+        _subpage_dishes_category: DishType::BREAKFAST
     };
 
     let _main_dishes_config = SubpageConfig {
         _relative_uri: String::from("/blog-kulinarny/category/dania-obiadowe"),
         _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
-        _next_page_selector: Selector::parse("#block-system-main .last a").unwrap()
+        _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(),
+        _subpage_dishes_category: DishType::DINNER
     };
 
     let _breakfast_menu_provider = KwestiasmakuDataProvider::new(

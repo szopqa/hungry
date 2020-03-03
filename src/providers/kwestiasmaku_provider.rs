@@ -6,8 +6,9 @@ use std::marker::{Sync, Send};
 
 use super::provider::{SubpageDataProvider};
 use super::subpage_config::{SubpageConfig};
-use super::menu_item::{MenuItem};
 use crate::clients::client::{Client};
+
+use crate::models::menu::{MenuItem, Menu};
 
 pub struct KwestiasmakuDataProvider <T> 
 where T: Client {
@@ -27,7 +28,7 @@ where T: Client + Sync + Send {
         }
     }
 
-    async fn get_subpage_menu_items(&self) -> Result<Vec<MenuItem>, Error> {
+    async fn get_subpage_menu_items(&self) -> Result<Menu, Error> {
         let mut _page_menu_items: Vec<MenuItem> = vec![];
 
         let _a_value_selector = Regex::new(r">(.*?)</a>").unwrap();
@@ -57,7 +58,7 @@ where T: Client + Sync + Send {
                 _page_menu_items.push(
                     MenuItem { 
                         _dish_name: _dish_name.to_owned(), 
-                        _dish_relative_path: _dish_relative_path.to_owned() 
+                        _dish_path: self._page_client.relative_path_to_full_uri(_dish_relative_path)
                     }
                 );
             }
@@ -71,9 +72,11 @@ where T: Client + Sync + Send {
                 },
                 None => break
             }
-
         }
 
-        Ok(_page_menu_items)
+        Ok(Menu::new(
+            self._page_config._subpage_dishes_category,
+            _page_menu_items
+        ))
     }
 }
