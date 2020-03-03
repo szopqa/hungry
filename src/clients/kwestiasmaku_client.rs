@@ -9,15 +9,18 @@ pub struct KwestiasmakuClient {
     _http_client: reqwest::Client
 }
 
-#[async_trait]
-impl Client for KwestiasmakuClient {
-    fn new(_base_uri: &str) -> KwestiasmakuClient {
+impl KwestiasmakuClient {
+    pub fn new(_base_uri: &str) -> KwestiasmakuClient {
         KwestiasmakuClient {
             _base_uri: Url::parse(_base_uri).unwrap(),
             _http_client: reqwest::Client::new()
         }
     }
+}
 
+/* Implementing Client trait only for reference type as we don't want to duplicate clients */
+#[async_trait]
+impl <'a> Client for &'a KwestiasmakuClient {
     fn get_base_uri (&self) -> &Url {
         &self._base_uri
     }

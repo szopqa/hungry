@@ -20,7 +20,7 @@ use models::{
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let _home_uri = "https://www.kwestiasmaku.com";
+    let ks_client = KwestiasmakuClient::new("https://www.kwestiasmaku.com");
 
     let _breakfast_config = SubpageConfig {
         _relative_uri: String::from("/dania_dla_dwojga/sniadania/przepisy.html"),
@@ -36,15 +36,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         _subpage_dishes_category: DishType::DINNER
     };
 
+
     let _breakfast_menu_provider = KwestiasmakuDataProvider::new(
         _breakfast_config,
-        KwestiasmakuClient::new(&_home_uri),
+        &ks_client,
         0
     );
 
     let _main_dishes_menu_provider = KwestiasmakuDataProvider::new(
         _main_dishes_config,
-        KwestiasmakuClient::new(&_home_uri),
+        &ks_client,
         0
     );
 

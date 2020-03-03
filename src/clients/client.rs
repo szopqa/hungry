@@ -3,7 +3,6 @@ use reqwest::{Error, Url};
 
 #[async_trait]
 pub trait Client {
-    fn new(_base_uri: &str) -> Self;
     fn get_base_uri (&self) -> &Url;
 
     async fn get_subpage_html_body(&self, _subpage_uri: &str) -> Result<String, Error>;

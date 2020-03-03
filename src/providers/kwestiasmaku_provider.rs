@@ -18,11 +18,11 @@ where T: Client {
 }
 
 #[async_trait]
-impl <T> SubpageDataProvider <T> for KwestiasmakuDataProvider <T> 
+impl <'a, T> SubpageDataProvider <T> for KwestiasmakuDataProvider <T> 
 where T: Client + Sync + Send {
     fn new(_page_config: SubpageConfig, _page_client: T, _max_iterations_num: i32) -> Self { 
         Self {
-             _page_config,
+            _page_config,
             _page_client,
             _max_iterations_num 
         }
