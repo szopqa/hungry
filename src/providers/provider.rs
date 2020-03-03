@@ -1,11 +1,13 @@
 use async_trait::async_trait;
 use reqwest::{Error};
+use std::marker::{Sync, Send};
 
-use subpage_config::{SubpageConfig};
-use clients::client::{Client};
+use crate::clients::client::{Client};
+use super::menu_item::{MenuItem};
+use super::subpage_config::{SubpageConfig};
 
 #[async_trait]
-pub trait SubpageDataProvider<T: Client> {
-    fn new(_page_config: &SubpageConfig, _page_client: T, _max_iterations_num: i32) -> Self; 
-    async fn get_subpage_menu_items(&self, _subpage_uri: &str) -> Result<String, Error>;
+pub trait SubpageDataProvider<T> where T: Client + Sync + Send {
+    fn new(_page_config: SubpageConfig, _page_client: T, _max_iterations_num: i32) -> Self;
+    async fn get_subpage_menu_items(&self) -> Result<Vec<MenuItem>, Error>;
 }

@@ -1,27 +1,33 @@
 use async_trait::async_trait;
+use reqwest::{Error};
+use regex::Regex;
+use scraper::{Html};
+use std::marker::{Sync, Send};
 
 use super::provider::{SubpageDataProvider};
 use super::subpage_config::{SubpageConfig};
-use clients::client::{Client};
+use super::menu_item::{MenuItem};
+use crate::clients::client::{Client};
 
-pub struct KwestiasmakuDataProvider <'a, T> 
+pub struct KwestiasmakuDataProvider <T> 
 where T: Client {
-    _page_config: &'a PageConfig<'a>,
+    _page_config: SubpageConfig,
     _page_client: T,
     _max_iterations_num: i32 // 0 -> disables limit
 }
 
 #[async_trait]
-impl <T: Client> SubpageDataProvider for KwestiasmakuDataProvider <T> {
-    fn new(_page_config: &SubpageConfig, _page_client: T, _max_iterations_num: i32) -> Self { 
+impl <T> SubpageDataProvider <T> for KwestiasmakuDataProvider <T> 
+where T: Client + Sync + Send {
+    fn new(_page_config: SubpageConfig, _page_client: T, _max_iterations_num: i32) -> Self { 
         Self {
-            _page_config,
+             _page_config,
             _page_client,
             _max_iterations_num 
         }
     }
 
-    async fn get_menu_items(&self) -> Result<Vec<MenuItem>, Error> {
+    async fn get_subpage_menu_items(&self) -> Result<Vec<MenuItem>, Error> {
         let mut _page_menu_items: Vec<MenuItem> = vec![];
 
         let _a_value_selector = Regex::new(r">(.*?)</a>").unwrap();
