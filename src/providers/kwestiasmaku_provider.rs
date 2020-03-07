@@ -5,9 +5,9 @@ use scraper::{Html};
 use std::marker::{Sync, Send};
 
 use super::provider::{SubpageDataProvider};
-use super::subpage_config::{SubpageConfig};
-use crate::clients::client::{Client};
 
+use crate::data_sources::subpage_config::{SubpageConfig};
+use crate::clients::client::{Client};
 use crate::models::menu::{MenuItem, Menu};
 
 pub struct KwestiasmakuDataProvider <T> 

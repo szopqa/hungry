@@ -1,58 +1,41 @@
-use scraper::{Selector};
+use clap::Clap;
 
 mod clients;
-use clients::{
-    kwestiasmaku_client::{KwestiasmakuClient},
-    client::{Client}
-};
-
 mod providers;
-use providers::{
-    kwestiasmaku_provider::{KwestiasmakuDataProvider},
-    subpage_config::{SubpageConfig},
-    provider::{SubpageDataProvider}
-};
 
 mod models;
 use models::{
     dish_type_enum::{DishType}
 };
 
+mod data_sources;
+use data_sources:: {
+    data_source::{DataSource},
+    kwestiasmaku::{KwestiasmakuDataSource}
+};
+
+#[derive(Clap)]
+#[clap(version = "1.0", author = "Michał Sz.")]
+struct Opts {
+    /// Sets type of dish you want to generate menu for
+    #[clap(short = "t", long = "type", default_value = "dinner")]
+    dish_type: String,
+    /// Number of meals in generated menu
+    #[clap(short = "n", long = "number", default_value = "4")]
+    num_of_dishes_in_menu: i32
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let ks_client = KwestiasmakuClient::new("https://www.kwestiasmaku.com");
+    let opts: Opts = Opts::parse();
 
-    let _breakfast_config = SubpageConfig {
-        _relative_uri: String::from("/dania_dla_dwojga/sniadania/przepisy.html"),
-        _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
-        _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
-        _subpage_dishes_category: DishType::BREAKFAST
-    };
+    let _dish_type: DishType = opts.dish_type.as_str().into();
+    let _num_of_dishes_in_menu: i32 = opts.num_of_dishes_in_menu;
 
-    let _main_dishes_config = SubpageConfig {
-        _relative_uri: String::from("/blog-kulinarny/category/dania-obiadowe"),
-        _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
-        _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(),
-        _subpage_dishes_category: DishType::DINNER
-    };
+    let _kwestiasmaku_data_source = KwestiasmakuDataSource::new("https://www.kwestiasmaku.com");
+    let _menu = _kwestiasmaku_data_source.get_menu_for_dish_type(_dish_type).await?;
 
-
-    let _breakfast_menu_provider = KwestiasmakuDataProvider::new(
-        _breakfast_config,
-        &ks_client,
-        0
-    );
-
-    let _main_dishes_menu_provider = KwestiasmakuDataProvider::new(
-        _main_dishes_config,
-        &ks_client,
-        0
-    );
-
-    let _breakfast_menu_items = _breakfast_menu_provider.get_subpage_menu_items().await?;
-    let _dinner_menu_items = _main_dishes_menu_provider.get_subpage_menu_items().await?;
-    println!("{:?}", _breakfast_menu_items);
-    println!("{:?}", _dinner_menu_items);
+    println!("{:?}", _menu);
 
     Ok(())
 }

@@ -4,7 +4,7 @@ use std::marker::{Sync, Send};
 
 use crate::clients::client::{Client};
 use crate::models::menu::{Menu};
-use super::subpage_config::{SubpageConfig};
+use crate::data_sources::subpage_config::{SubpageConfig};
 
 #[async_trait]
 pub trait SubpageDataProvider<T> where T: Client + Sync + Send {
