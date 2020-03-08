@@ -32,6 +32,7 @@ impl DataSource for KwestiasmakuDataSource {
             client: ks_client,
             sub_pages: vec![
 
+                // https://www.kwestiasmaku.com/blog-kulinarny/category/dania-obiadowe
                 SubpageConfig {
                     _relative_uri: String::from("/blog-kulinarny/category/dania-obiadowe"),
                     _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
@@ -39,11 +40,36 @@ impl DataSource for KwestiasmakuDataSource {
                     _subpage_dishes_category: DishType::DINNER
                 },
 
+                // https://www.kwestiasmaku.com/dania_dla_dwojga/sniadania/przepisy.html
                 SubpageConfig {
                     _relative_uri: String::from("/dania_dla_dwojga/sniadania/przepisy.html"),
                     _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
                     _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
                     _subpage_dishes_category: DishType::BREAKFAST
+                },
+
+                // https://www.kwestiasmaku.com/pasta/pasta.html
+                SubpageConfig {
+                    _relative_uri: String::from("/pasta/pasta.html"),
+                    _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
+                    _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
+                    _subpage_dishes_category: DishType::DINNER
+                },
+
+                // https://www.kwestiasmaku.com/blog-kulinarny/category/przepisy-fit?sort_by=created&f[]=field_przepisy:976&default_filter=803
+                SubpageConfig {
+                    _relative_uri: String::from("/blog-kulinarny/category/przepisy-fit?sort_by=created&f[]=field_przepisy:976&default_filter=803"),
+                    _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
+                    _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
+                    _subpage_dishes_category: DishType::DINNER
+                },
+
+                // https://www.kwestiasmaku.com/przepisy/lunche-do-pracy 
+                SubpageConfig {
+                    _relative_uri: String::from("/przepisy/lunche-do-pracy"),
+                    _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
+                    _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
+                    _subpage_dishes_category: DishType::LUNCH
                 }
             ]
         }

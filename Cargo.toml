@@ -13,3 +13,5 @@ scraper = "0.11.0"
 regex = "1"
 async-trait = "0.1.24"
 clap = { git = "https://github.com/clap-rs/clap/" }
+strum = "0.18.0"
+strum_macros = "0.18.0"
