@@ -1,6 +1,6 @@
 [package]
 name = "hungry"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["szopqa96@gmail.com <szopqa96@gmail.com>"]
 edition = "2018"
 
@@ -15,3 +15,4 @@ async-trait = "0.1.24"
 clap = { git = "https://github.com/clap-rs/clap/" }
 strum = "0.18.0"
 strum_macros = "0.18.0"
+rand = "0.7"

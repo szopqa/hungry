@@ -18,7 +18,7 @@ impl KwestiasmakuClient {
     }
 }
 
-/* Implementing Client trait only for reference type as we don't want to duplicate clients */
+/* Implementing Client trait only for reference type as we don't want to duplicate clients for same host */
 #[async_trait]
 impl <'a> Client for &'a KwestiasmakuClient {
     fn get_base_uri (&self) -> &Url {

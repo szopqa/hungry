@@ -45,7 +45,7 @@ where T: Client + Sync + Send {
                 _iteration += 1;
             }
 
-            println!("Processing from uri: {}", _request_uri);
+            println!("Fetching data from uri: {}", _request_uri);
 
             let body = self._page_client.get_subpage_html_body(&_request_uri).await?;
             let doc = Html::parse_document(&body);
