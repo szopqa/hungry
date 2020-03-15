@@ -41,7 +41,7 @@ impl DataSource for KwestiasmakuDataSource {
                     _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
                     _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(),
                     _sub_page_config: SubPageConfig {
-                        _ingredients_selector: Selector::parse(".views-field-title a").unwrap()
+                        _ingredients_selector: Selector::parse(".field-type-text-long.field-label-hidden li").unwrap()
                     },
                     _sub_page_dishes_category: DishType::DINNER
                 },
@@ -52,7 +52,7 @@ impl DataSource for KwestiasmakuDataSource {
                     _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
                     _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
                     _sub_page_config: SubPageConfig {
-                        _ingredients_selector: Selector::parse(".views-field-title a").unwrap()
+                        _ingredients_selector: Selector::parse(".field-type-text-long.field-label-hidden li").unwrap()
                     },
                     _sub_page_dishes_category: DishType::BREAKFAST
                 },
@@ -63,7 +63,7 @@ impl DataSource for KwestiasmakuDataSource {
                     _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
                     _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
                     _sub_page_config: SubPageConfig {
-                        _ingredients_selector: Selector::parse(".views-field-title a").unwrap()
+                        _ingredients_selector: Selector::parse(".field-type-text-long.field-label-hidden li").unwrap()
                     },
                     _sub_page_dishes_category: DishType::DINNER
                 },
@@ -74,7 +74,7 @@ impl DataSource for KwestiasmakuDataSource {
                     _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
                     _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
                     _sub_page_config: SubPageConfig {
-                        _ingredients_selector: Selector::parse(".views-field-title a").unwrap()
+                        _ingredients_selector: Selector::parse(".field-type-text-long.field-label-hidden li").unwrap()
                     },
                     _sub_page_dishes_category: DishType::DINNER
                 },
@@ -85,7 +85,7 @@ impl DataSource for KwestiasmakuDataSource {
                     _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
                     _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
                     _sub_page_config: SubPageConfig {
-                        _ingredients_selector: Selector::parse(".views-field-title a").unwrap()
+                        _ingredients_selector: Selector::parse(".field-type-text-long.field-label-hidden li").unwrap()
                     },
                     _sub_page_dishes_category: DishType::LUNCH
                 }

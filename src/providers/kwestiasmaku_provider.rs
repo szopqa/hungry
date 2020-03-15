@@ -57,8 +57,9 @@ where T: Client + Sync + Send {
 
                 _page_menu_items.push(
                     MenuItem { 
-                        _dish_name: _dish_name.to_owned(), 
-                        _dish_path: self._page_client.relative_path_to_full_uri(_dish_relative_path),
+                        _dish_name: _dish_name.to_owned(),
+                        _dish_absolute_path: self._page_client.relative_path_to_full_uri(_dish_relative_path),
+                        _dish_relative_path: _dish_relative_path.to_string(),
                         _ingredients: vec![] // ingredients list is build outside this function
                     }
                 );
@@ -83,8 +84,21 @@ where T: Client + Sync + Send {
 
     async fn get_menu_dishes_details(&self, _menu: Menu) -> Result<Menu, Error> {
         println!("\nGetting menu dishes details...\n");
+        
         for _each_menu_dish in &_menu._dishes {
-            println!("Getting details for dish: {:?}", _each_menu_dish);
+            let mut _resource_details_uri: &str= &_each_menu_dish._dish_relative_path;
+
+            println!("Getting details for dish: {:?} from URI {:?}", _each_menu_dish, _resource_details_uri);
+
+            let _details_page_body = self._page_client.get_subpage_html_body(&_resource_details_uri).await?;
+            let _details_doc = Html::parse_document(&_details_page_body);
+
+            for element in _details_doc.select(&self._page_config._sub_page_config._ingredients_selector) {
+                let _element_as_html = element.html();
+                let _dish = element.value();
+                println!("as html: {:?}", _element_as_html);
+                println!("elem: {:?}", _dish);
+            }
         }
 
         Ok(_menu)

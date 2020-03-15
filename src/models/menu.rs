@@ -10,7 +10,8 @@ pub struct Ingredient {
 #[derive(Debug, Clone)]
 pub struct MenuItem {
     pub _dish_name: String,
-    pub _dish_path: String,
+    pub _dish_absolute_path: String,
+    pub _dish_relative_path: String,
     pub _ingredients: Vec<Ingredient>
 }
 
@@ -39,7 +40,7 @@ impl Menu {
 
     fn describe_single_menu_item(_menu_item: &MenuItem) -> () {
         println!("{}", _menu_item._dish_name.to_uppercase());
-        println!("      Full recipe available at: {}", _menu_item._dish_path);
+        println!("      Full recipe available at: {}", _menu_item._dish_absolute_path);
     }
 
     pub fn describe(&self) -> () {
