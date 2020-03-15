@@ -10,4 +10,5 @@ use crate::models::{
 pub trait DataSource {
     fn new(_base_uri: &str) -> Self;
     async fn get_menu_for_dish_type(&self, _dish_type: DishType) -> Result<Menu, Error>;
+    async fn get_ingredients_for_menu(&self, _menu: Menu) -> Result<Menu, Error>;
 }

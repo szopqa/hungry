@@ -4,23 +4,23 @@ use regex::Regex;
 use scraper::{Html};
 use std::marker::{Sync, Send};
 
-use super::provider::{SubpageDataProvider};
+use super::provider::{PageDataProvider};
 
-use crate::data_sources::subpage_config::{SubpageConfig};
+use crate::data_sources::page_config::{PageConfig};
 use crate::clients::client::{Client};
 use crate::models::menu::{MenuItem, Menu};
 
 pub struct KwestiasmakuDataProvider <T> 
 where T: Client {
-    _page_config: SubpageConfig,
+    _page_config: PageConfig,
     _page_client: T,
     _max_iterations_num: i32 // 0 -> disables limit
 }
 
 #[async_trait]
-impl <'a, T> SubpageDataProvider <T> for KwestiasmakuDataProvider <T> 
+impl <'a, T> PageDataProvider <T> for KwestiasmakuDataProvider <T> 
 where T: Client + Sync + Send {
-    fn new(_page_config: SubpageConfig, _page_client: T, _max_iterations_num: i32) -> Self { 
+    fn new(_page_config: PageConfig, _page_client: T, _max_iterations_num: i32) -> Self { 
         Self {
             _page_config,
             _page_client,
@@ -28,7 +28,7 @@ where T: Client + Sync + Send {
         }
     }
 
-    async fn get_subpage_menu_items(&self) -> Result<Menu, Error> {
+    async fn get_page_menu_items(&self) -> Result<Menu, Error> {
         let mut _page_menu_items: Vec<MenuItem> = vec![];
 
         let _a_value_selector = Regex::new(r">(.*?)</a>").unwrap();
@@ -58,7 +58,8 @@ where T: Client + Sync + Send {
                 _page_menu_items.push(
                     MenuItem { 
                         _dish_name: _dish_name.to_owned(), 
-                        _dish_path: self._page_client.relative_path_to_full_uri(_dish_relative_path)
+                        _dish_path: self._page_client.relative_path_to_full_uri(_dish_relative_path),
+                        _ingredients: vec![] // ingredients list is build outside this function
                     }
                 );
             }
@@ -75,8 +76,17 @@ where T: Client + Sync + Send {
         }
 
         Ok(Menu::new(
-            self._page_config._subpage_dishes_category,
+            self._page_config._sub_page_dishes_category,
             _page_menu_items
         ))
+    }
+
+    async fn get_menu_dishes_details(&self, _menu: Menu) -> Result<Menu, Error> {
+        println!("\nGetting menu dishes details...\n");
+        for _each_menu_dish in &_menu._dishes {
+            println!("Getting details for dish: {:?}", _each_menu_dish);
+        }
+
+        Ok(_menu)
     }
 }

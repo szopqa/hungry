@@ -2,9 +2,16 @@ use super::dish_type_enum::{DishType};
 use rand::seq::SliceRandom;
 
 #[derive(Debug, Clone)]
+pub struct Ingredient {
+    _name: String,
+    _amount: f32
+}
+
+#[derive(Debug, Clone)]
 pub struct MenuItem {
     pub _dish_name: String,
     pub _dish_path: String,
+    pub _ingredients: Vec<Ingredient>
 }
 
 #[derive(Debug)]

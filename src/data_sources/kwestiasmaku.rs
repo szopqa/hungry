@@ -7,7 +7,7 @@ use crate::clients::{
 };
 
 use crate::providers::{
-    provider::{SubpageDataProvider},
+    provider::{PageDataProvider},
     kwestiasmaku_provider::{KwestiasmakuDataProvider}
 };
 
@@ -15,12 +15,15 @@ use crate::models::{
     menu::{Menu, MenuItem},
     dish_type_enum::{DishType}
 };
-use super::subpage_config::{SubpageConfig};
+use super::page_config::{
+    PageConfig,
+    SubPageConfig
+};
 use super::data_source::{DataSource};
 
 pub struct KwestiasmakuDataSource {  
     client: KwestiasmakuClient,
-    sub_pages: Vec<SubpageConfig>
+    sub_pages: Vec<PageConfig>
 }
 
 #[async_trait]
@@ -33,50 +36,65 @@ impl DataSource for KwestiasmakuDataSource {
             sub_pages: vec![
 
                 // https://www.kwestiasmaku.com/blog-kulinarny/category/dania-obiadowe
-                SubpageConfig {
+                PageConfig {
                     _relative_uri: String::from("/blog-kulinarny/category/dania-obiadowe"),
                     _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
                     _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(),
-                    _subpage_dishes_category: DishType::DINNER
+                    _sub_page_config: SubPageConfig {
+                        _ingredients_selector: Selector::parse(".views-field-title a").unwrap()
+                    },
+                    _sub_page_dishes_category: DishType::DINNER
                 },
 
                 // https://www.kwestiasmaku.com/dania_dla_dwojga/sniadania/przepisy.html
-                SubpageConfig {
+                PageConfig {
                     _relative_uri: String::from("/dania_dla_dwojga/sniadania/przepisy.html"),
                     _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
                     _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
-                    _subpage_dishes_category: DishType::BREAKFAST
+                    _sub_page_config: SubPageConfig {
+                        _ingredients_selector: Selector::parse(".views-field-title a").unwrap()
+                    },
+                    _sub_page_dishes_category: DishType::BREAKFAST
                 },
 
                 // https://www.kwestiasmaku.com/pasta/pasta.html
-                SubpageConfig {
+                PageConfig {
                     _relative_uri: String::from("/pasta/pasta.html"),
                     _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
                     _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
-                    _subpage_dishes_category: DishType::DINNER
+                    _sub_page_config: SubPageConfig {
+                        _ingredients_selector: Selector::parse(".views-field-title a").unwrap()
+                    },
+                    _sub_page_dishes_category: DishType::DINNER
                 },
 
                 // https://www.kwestiasmaku.com/blog-kulinarny/category/przepisy-fit?sort_by=created&f[]=field_przepisy:976&default_filter=803
-                SubpageConfig {
+                PageConfig {
                     _relative_uri: String::from("/blog-kulinarny/category/przepisy-fit?sort_by=created&f[]=field_przepisy:976&default_filter=803"),
                     _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
                     _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
-                    _subpage_dishes_category: DishType::DINNER
+                    _sub_page_config: SubPageConfig {
+                        _ingredients_selector: Selector::parse(".views-field-title a").unwrap()
+                    },
+                    _sub_page_dishes_category: DishType::DINNER
                 },
 
                 // https://www.kwestiasmaku.com/przepisy/lunche-do-pracy 
-                SubpageConfig {
+                PageConfig {
                     _relative_uri: String::from("/przepisy/lunche-do-pracy"),
                     _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
                     _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
-                    _subpage_dishes_category: DishType::LUNCH
+                    _sub_page_config: SubPageConfig {
+                        _ingredients_selector: Selector::parse(".views-field-title a").unwrap()
+                    },
+                    _sub_page_dishes_category: DishType::LUNCH
                 }
             ]
         }
     }
 
     async fn get_menu_for_dish_type(&self, _dish_type: DishType) -> Result<Menu, Error> {
-        let _sub_pages_for_chosen_dish_type: Vec<SubpageConfig> = 
+        let _sub_pages_for_chosen_dish_type: Vec<PageConfig> = 
             self.sub_pages
                 .iter()
                 .cloned()
@@ -90,7 +108,7 @@ impl DataSource for KwestiasmakuDataSource {
         let _sub_pages_providers: Vec<KwestiasmakuDataProvider<&KwestiasmakuClient>> = _sub_pages_for_chosen_dish_type
             .into_iter()
             .map(|_sub_page_config| 
-                SubpageDataProvider::new(
+                PageDataProvider::new(
                     _sub_page_config,
                     &self.client,
                     0
@@ -104,10 +122,38 @@ impl DataSource for KwestiasmakuDataSource {
 
         let mut _dishes: Vec<MenuItem> = vec![];
         for _each_provider in _sub_pages_providers {
-            let _menu = _each_provider.get_subpage_menu_items().await?;
+            let _menu = _each_provider.get_page_menu_items().await?;
             _dishes.extend(_menu._dishes);
         }
 
         Ok(Menu {_dish_type: _dish_type, _dishes})
+    }
+
+    async fn get_ingredients_for_menu(&self, _menu: Menu) -> Result<Menu, Error> {
+        let _page_configs: Vec<PageConfig> = 
+            self.sub_pages
+                .iter()
+                .cloned()
+                .filter(|_sub_page_config| _sub_page_config.is_for_dish_type(_menu._dish_type))
+                .collect();
+
+        // TODO: Fix getting only one config from collection
+        let _sub_page_config: PageConfig= 
+            _page_configs
+                .get(0)
+                .unwrap()
+                .clone();
+
+        println!("{:?}", _sub_page_config);
+
+        let _sub_page_details_provider: KwestiasmakuDataProvider<&KwestiasmakuClient> = PageDataProvider::new(
+            _sub_page_config,
+            &self.client,
+            0
+        );
+
+        let _menu_with_dishes_details = _sub_page_details_provider.get_menu_dishes_details(_menu).await?;
+
+        Ok(_menu_with_dishes_details)
     }
 }
