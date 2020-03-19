@@ -85,10 +85,12 @@ where T: Client + Sync + Send {
     async fn get_menu_dishes_details(&self, _menu: Menu) -> Result<Menu, Error> {
         println!("\nGetting menu dishes details...\n");
         
+        let _ingredient_value_selector = Regex::new(r"<li>\n\t\t(.+?)</li>").unwrap();
+
         for _each_menu_dish in &_menu._dishes {
             let mut _resource_details_uri: &str= &_each_menu_dish._dish_relative_path;
 
-            println!("Getting details for dish: {:?} from URI {:?}", _each_menu_dish, _resource_details_uri);
+            println!("Getting details for dish: {:?} from URI {:?}\n", _each_menu_dish, _resource_details_uri);
 
             let _details_page_body = self._page_client.get_subpage_html_body(&_resource_details_uri).await?;
             let _details_doc = Html::parse_document(&_details_page_body);
@@ -96,8 +98,18 @@ where T: Client + Sync + Send {
             for element in _details_doc.select(&self._page_config._sub_page_config._ingredients_selector) {
                 let _element_as_html = element.html();
                 let _dish = element.value();
-                println!("as html: {:?}", _element_as_html);
-                println!("elem: {:?}", _dish);
+                let _ingredient = _ingredient_value_selector
+                    .captures(&_element_as_html)
+                    .unwrap()
+                    .get(1)
+                    .unwrap()
+                    .as_str()
+                    // replacing html elements from fetched data
+                    .replace("\\n", "")
+                    .replace("\\t", "")
+                    .replace("<strong>", "")
+                    .replace(r"</strong>", "");
+                println!("{:?}", _ingredient);
             }
         }
 
