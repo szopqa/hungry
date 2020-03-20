@@ -34,9 +34,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let _dish_type: DishType = opts.dish_type.as_str().into();
     let _num_of_dishes_in_menu: usize = opts.num_of_dishes_in_menu;
 
+    let _kwestiasmaku_data_source = KwestiasmakuDataSource::new("https://www.kwestiasmaku.com");
+
     println!("Generating menu for {:?}\n", _dish_type);
 
-    let _kwestiasmaku_data_source = KwestiasmakuDataSource::new("https://www.kwestiasmaku.com");
     let _generated_menu = _kwestiasmaku_data_source
         .get_menu_for_dish_type(_dish_type).await?
         .pick_num_of_elements(_num_of_dishes_in_menu);

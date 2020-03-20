@@ -8,7 +8,7 @@ use super::provider::{PageDataProvider};
 
 use crate::data_sources::page_config::{PageConfig};
 use crate::clients::client::{Client};
-use crate::models::menu::{MenuItem, Menu};
+use crate::models::menu::{MenuItem, Menu, Ingredient};
 
 pub struct KwestiasmakuDataProvider <T> 
 where T: Client {
@@ -82,12 +82,12 @@ where T: Client + Sync + Send {
         ))
     }
 
-    async fn get_menu_dishes_details(&self, _menu: Menu) -> Result<Menu, Error> {
+    async fn get_menu_dishes_details(&self, mut _menu: Menu) -> Result<Menu, Error> {
         println!("\nGetting menu dishes details...\n");
         
         let _ingredient_value_selector = Regex::new(r"<li>\n\t\t(.+?)</li>").unwrap();
 
-        for _each_menu_dish in &_menu._dishes {
+        for _each_menu_dish in &mut _menu._dishes {
             let mut _resource_details_uri: &str= &_each_menu_dish._dish_relative_path;
 
             println!("Getting details for dish: {:?} from URI {:?}\n", _each_menu_dish, _resource_details_uri);
@@ -95,10 +95,11 @@ where T: Client + Sync + Send {
             let _details_page_body = self._page_client.get_subpage_html_body(&_resource_details_uri).await?;
             let _details_doc = Html::parse_document(&_details_page_body);
 
+            let mut _dish_ingredients: Vec<Ingredient> = vec![];
             for element in _details_doc.select(&self._page_config._sub_page_config._ingredients_selector) {
                 let _element_as_html = element.html();
                 let _dish = element.value();
-                let _ingredient = _ingredient_value_selector
+                let _ingredient_description = _ingredient_value_selector
                     .captures(&_element_as_html)
                     .unwrap()
                     .get(1)
@@ -109,8 +110,14 @@ where T: Client + Sync + Send {
                     .replace("\\t", "")
                     .replace("<strong>", "")
                     .replace(r"</strong>", "");
-                println!("{:?}", _ingredient);
+                
+                _dish_ingredients.push(Ingredient {
+                    _name: _ingredient_description,
+                    _amount: 0_f32 //TODO: extract amount and unit from each element
+                })
             }
+
+            _each_menu_dish.update_with_ingredients(_dish_ingredients);
         }
 
         Ok(_menu)
