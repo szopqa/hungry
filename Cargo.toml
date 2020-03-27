@@ -1,6 +1,6 @@
 [package]
 name = "hungry"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["szopqa96@gmail.com <szopqa96@gmail.com>"]
 edition = "2018"
 
