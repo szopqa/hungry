@@ -144,8 +144,6 @@ impl DataSource for KwestiasmakuDataSource {
                 .unwrap()
                 .clone();
 
-        println!("{:?}", _sub_page_config);
-
         let _sub_page_details_provider: KwestiasmakuDataProvider<&KwestiasmakuClient> = PageDataProvider::new(
             _sub_page_config,
             &self.client,

@@ -45,7 +45,10 @@ where T: Client + Sync + Send {
                 _iteration += 1;
             }
 
-            println!("Fetching data from uri: {}", _request_uri);
+            println!(
+                "Fetching data from uri: {}", 
+                _self._page_client.relative_path_to_full_uri(&_request_uri)
+            );
 
             let body = self._page_client.get_subpage_html_body(&_request_uri).await?;
             let doc = Html::parse_document(&body);
@@ -89,8 +92,6 @@ where T: Client + Sync + Send {
 
         for _each_menu_dish in &mut _menu._dishes {
             let mut _resource_details_uri: &str= &_each_menu_dish._dish_relative_path;
-
-            println!("Getting details for dish: {:?} from URI {:?}\n", _each_menu_dish, _resource_details_uri);
 
             let _details_page_body = self._page_client.get_subpage_html_body(&_resource_details_uri).await?;
             let _details_doc = Html::parse_document(&_details_page_body);

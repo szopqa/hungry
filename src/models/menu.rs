@@ -49,9 +49,9 @@ impl Menu {
     }
 
     fn describe_single_menu_item(_menu_item: &MenuItem) -> () {
-        println!("{}", _menu_item._dish_name.to_uppercase());
+        println!("{}\n", _menu_item._dish_name.to_uppercase());
         println!(
-            "      Full recipe available at: {}",
+            "      Full recipe available at: \n        {}\n",
             _menu_item._dish_absolute_path
         );
         println!("       Ingredients:");
