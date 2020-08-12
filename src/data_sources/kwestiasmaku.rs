@@ -1,3 +1,4 @@
+use std::sync::{Arc, Mutex};
 use scraper::{Selector};
 use async_trait::async_trait;
 use reqwest::{Error};
@@ -22,7 +23,7 @@ use super::page_config::{
 use super::data_source::{DataSource};
 
 pub struct KwestiasmakuDataSource {  
-    client: KwestiasmakuClient,
+    client: Arc<KwestiasmakuClient>,
     sub_pages: Vec<PageConfig>
 }
 
@@ -32,7 +33,7 @@ impl DataSource for KwestiasmakuDataSource {
         let ks_client = KwestiasmakuClient::new(_base_uri);
 
         Self {
-            client: ks_client,
+            client: Arc::new(ks_client),
             sub_pages: vec![
 
                 // https://www.kwestiasmaku.com/blog-kulinarny/category/dania-obiadowe
@@ -105,28 +106,35 @@ impl DataSource for KwestiasmakuDataSource {
             return Ok(Menu {_dish_type: _dish_type, _dishes: vec![] });
         }
 
-        let _sub_pages_providers: Vec<KwestiasmakuDataProvider<&KwestiasmakuClient>> = _sub_pages_for_chosen_dish_type
+        let _sub_pages_providers: Vec<KwestiasmakuDataProvider<KwestiasmakuClient>> = _sub_pages_for_chosen_dish_type
             .into_iter()
-            .map(|_sub_page_config| 
+            .map(|_sub_page_config| {
                 PageDataProvider::new(
                     _sub_page_config,
-                    &self.client,
+                    self.client.clone(),
                     0
                 )
-            )
+            })
             .collect();
 
-        if _sub_pages_providers.is_empty() {
-            return Ok(Menu {_dish_type: _dish_type, _dishes: vec![] });
+        let mut _dishes_mutex_guard: Arc<Mutex<Vec<MenuItem>>> = Arc::new(Mutex::new(vec![]));
+
+        let providers: Vec<tokio::task::JoinHandle<()>> = _sub_pages_providers.into_iter()
+            .map(|_provider| {
+                let _dishes_mutex_guard = _dishes_mutex_guard.clone();
+
+                tokio::spawn(async move {
+                    let _menu = _provider.get_page_menu_items().await.unwrap();
+                    _dishes_mutex_guard.lock().unwrap().extend(_menu._dishes);
+                })
+            }).collect();
+
+        for _each_provider in providers {
+           let _ = _each_provider.await;
         }
 
-        let mut _dishes: Vec<MenuItem> = vec![];
-        for _each_provider in _sub_pages_providers {
-            let _menu = _each_provider.get_page_menu_items().await?;
-            _dishes.extend(_menu._dishes);
-        }
-
-        Ok(Menu {_dish_type: _dish_type, _dishes})
+        let _dishes = &*_dishes_mutex_guard.lock().unwrap();
+        Ok(Menu {_dish_type: _dish_type, _dishes: _dishes.to_vec()})
     }
 
     async fn get_ingredients_for_menu(&self, _menu: Menu) -> Result<Menu, Error> {
@@ -144,9 +152,9 @@ impl DataSource for KwestiasmakuDataSource {
                 .unwrap()
                 .clone();
 
-        let _sub_page_details_provider: KwestiasmakuDataProvider<&KwestiasmakuClient> = PageDataProvider::new(
+        let _sub_page_details_provider: KwestiasmakuDataProvider<KwestiasmakuClient> = PageDataProvider::new(
             _sub_page_config,
-            &self.client,
+            self.client.clone(),
             0
         );
 

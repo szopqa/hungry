@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use async_trait::async_trait;
 use reqwest::{Error};
 use regex::Regex;
@@ -13,14 +14,14 @@ use crate::models::menu::{MenuItem, Menu, Ingredient};
 pub struct KwestiasmakuDataProvider <T> 
 where T: Client {
     _page_config: PageConfig,
-    _page_client: T,
+    _page_client: Arc<T>,
     _max_iterations_num: i32 // 0 -> disables limit
 }
 
 #[async_trait]
 impl <'a, T> PageDataProvider <T> for KwestiasmakuDataProvider <T> 
 where T: Client + Sync + Send {
-    fn new(_page_config: PageConfig, _page_client: T, _max_iterations_num: i32) -> Self { 
+    fn new(_page_config: PageConfig, _page_client: Arc<T>, _max_iterations_num: i32) -> Self { 
         Self {
             _page_config,
             _page_client,
