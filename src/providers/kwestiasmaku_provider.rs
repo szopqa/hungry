@@ -124,4 +124,38 @@ where T: Client + Sync + Send {
 
         Ok(_menu)
     }
+
+    async fn get_ingredients_for_dish<'b>(&self, _dish: &'b mut MenuItem) -> Result<&'b MenuItem, Error> {
+        let _ingredient_value_selector = Regex::new(r"<li>\n\t\t(.+?)</li>").unwrap();
+
+        let mut _resource_details_uri: &str= &_dish._dish_relative_path;
+
+        let _details_page_body = self._page_client.get_subpage_html_body(&_resource_details_uri).await?;
+        let _details_doc = Html::parse_document(&_details_page_body);
+
+        let mut _dish_ingredients: Vec<Ingredient> = vec![];
+        for element in _details_doc.select(&self._page_config._sub_page_config._ingredients_selector) {
+            let _element_as_html = element.html();
+            let _ingredient_description = _ingredient_value_selector
+                .captures(&_element_as_html)
+                .unwrap()
+                .get(1)
+                .unwrap()
+                .as_str()
+                // replacing html elements from fetched data
+                .replace("\\n", "")
+                .replace("\\t", "")
+                .replace("<strong>", "")
+                .replace(r"</strong>", "");
+            
+            _dish_ingredients.push(Ingredient {
+                _name: _ingredient_description,
+                _amount: 0_f32 //TODO: extract amount and unit from each element
+            })
+        }
+
+        _dish.update_with_ingredients(_dish_ingredients);
+
+        Ok(_dish)
+    }
 }

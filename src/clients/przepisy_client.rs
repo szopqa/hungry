@@ -9,15 +9,6 @@ pub struct PrzepisyClient {
     _http_client: reqwest::Client
 }
 
-impl PrzepisyClient {
-    pub fn new(_base_uri: &str) -> PrzepisyClient {
-        PrzepisyClient {
-            _base_uri: Url::parse(_base_uri).unwrap(),
-            _http_client: reqwest::Client::new()
-        }
-    }
-}
-
 /* Implementing Client trait only for reference type as we don't want to duplicate clients for same host */
 #[async_trait]
 impl <'a> Client for &'a PrzepisyClient {

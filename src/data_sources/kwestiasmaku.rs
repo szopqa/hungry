@@ -137,7 +137,7 @@ impl DataSource for KwestiasmakuDataSource {
         Ok(Menu {_dish_type: _dish_type, _dishes: _dishes.to_vec()})
     }
 
-    async fn get_ingredients_for_menu(&self, _menu: Menu) -> Result<Menu, Error> {
+    async fn get_ingredients_for_menu(&self, mut _menu: Menu) -> Result<Menu, Error> {
         let _page_configs: Vec<PageConfig> = 
             self.sub_pages
                 .iter()
@@ -158,8 +158,10 @@ impl DataSource for KwestiasmakuDataSource {
             0
         );
 
-        let _menu_with_dishes_details = _sub_page_details_provider.get_menu_dishes_details(_menu).await?;
+        for _each_menu_dish in _menu._dishes.iter_mut(){
+            _sub_page_details_provider.get_ingredients_for_dish(_each_menu_dish).await?;
+        }        
 
-        Ok(_menu_with_dishes_details)
+        Ok(_menu)
     }
 }
