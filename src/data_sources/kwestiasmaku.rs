@@ -1,15 +1,16 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc};
+use tokio::sync::Mutex;
 use scraper::{Selector};
 use async_trait::async_trait;
 use reqwest::{Error};
 
 use crate::clients::{
-    kwestiasmaku_client::{KwestiasmakuClient}
+    ks_client::{KSClient}
 };
 
 use crate::providers::{
     provider::{PageDataProvider},
-    kwestiasmaku_provider::{KwestiasmakuDataProvider}
+    ks_provider::{KSDataProvider}
 };
 
 use crate::models::{
@@ -22,15 +23,15 @@ use super::page_config::{
 };
 use super::data_source::{DataSource};
 
-pub struct KwestiasmakuDataSource {  
-    client: Arc<KwestiasmakuClient>,
+pub struct KSDataSource {  
+    client: Arc<KSClient>,
     sub_pages: Vec<PageConfig>
 }
 
 #[async_trait]
-impl DataSource for KwestiasmakuDataSource {
+impl DataSource for KSDataSource {
     fn new(_base_uri: &str) -> Self {
-        let ks_client = KwestiasmakuClient::new(_base_uri);
+        let ks_client = KSClient::new(_base_uri);
 
         Self {
             client: Arc::new(ks_client),
@@ -69,6 +70,17 @@ impl DataSource for KwestiasmakuDataSource {
                     _sub_page_dishes_category: DishType::DINNER
                 },
 
+                // https://www.kwestiasmaku.com/pasta/pasta.html
+                PageConfig {
+                    _relative_uri: String::from("przepisy/szybki-obiad"),
+                    _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
+                    _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
+                    _sub_page_config: SubPageConfig {
+                        _ingredients_selector: Selector::parse(".field-type-text-long.field-label-hidden li").unwrap()
+                    },
+                    _sub_page_dishes_category: DishType::DINNER
+                },
+
                 // https://www.kwestiasmaku.com/blog-kulinarny/category/przepisy-fit?sort_by=created&f[]=field_przepisy:976&default_filter=803
                 PageConfig {
                     _relative_uri: String::from("/blog-kulinarny/category/przepisy-fit?sort_by=created&f[]=field_przepisy:976&default_filter=803"),
@@ -95,6 +107,8 @@ impl DataSource for KwestiasmakuDataSource {
     }
 
     async fn get_menu_for_dish_type(&self, _dish_type: DishType) -> Result<Menu, Error> {
+        println!("Generating menu for {:?}\n", _dish_type);
+
         let _sub_pages_for_chosen_dish_type: Vec<PageConfig> = 
             self.sub_pages
                 .iter()
@@ -106,7 +120,7 @@ impl DataSource for KwestiasmakuDataSource {
             return Ok(Menu {_dish_type: _dish_type, _dishes: vec![] });
         }
 
-        let _sub_pages_providers: Vec<KwestiasmakuDataProvider<KwestiasmakuClient>> = _sub_pages_for_chosen_dish_type
+        let _sub_pages_providers: Vec<KSDataProvider<KSClient>> = _sub_pages_for_chosen_dish_type
             .into_iter()
             .map(|_sub_page_config| {
                 PageDataProvider::new(
@@ -125,7 +139,7 @@ impl DataSource for KwestiasmakuDataSource {
 
                 tokio::spawn(async move {
                     let _menu = _provider.get_page_menu_items().await.unwrap();
-                    _dishes_mutex_guard.lock().unwrap().extend(_menu._dishes);
+                    _dishes_mutex_guard.lock().await.extend(_menu._dishes);
                 })
             }).collect();
 
@@ -133,11 +147,13 @@ impl DataSource for KwestiasmakuDataSource {
            let _ = _each_provider.await;
         }
 
-        let _dishes = &*_dishes_mutex_guard.lock().unwrap();
+        let _dishes = &*_dishes_mutex_guard.lock().await;
         Ok(Menu {_dish_type: _dish_type, _dishes: _dishes.to_vec()})
     }
 
     async fn get_ingredients_for_menu(&self, mut _menu: Menu) -> Result<Menu, Error> {
+        println!("\nPreparing ingredients list\n");
+
         let _page_configs: Vec<PageConfig> = 
             self.sub_pages
                 .iter()
@@ -152,15 +168,34 @@ impl DataSource for KwestiasmakuDataSource {
                 .unwrap()
                 .clone();
 
-        let _sub_page_details_provider: KwestiasmakuDataProvider<KwestiasmakuClient> = PageDataProvider::new(
-            _sub_page_config,
-            self.client.clone(),
-            0
+        let _sub_page_details_provider: Arc<KSDataProvider<KSClient>> = Arc::new(
+            PageDataProvider::new(
+                _sub_page_config,
+                self.client.clone(),
+                0
+            )
         );
 
-        for _each_menu_dish in _menu._dishes.iter_mut(){
-            _sub_page_details_provider.get_ingredients_for_dish(_each_menu_dish).await?;
-        }        
+        let _dishes_with_ingredients: Arc<Mutex<Vec<MenuItem>>> = Arc::new(Mutex::new(vec![]));
+
+        let handlers: Vec<tokio::task::JoinHandle<()>> = _menu._dishes.into_iter()
+        .map(|mut d| {
+            let provider = _sub_page_details_provider.clone();
+            let _dishes_with_ingredients = _dishes_with_ingredients.clone();
+
+            tokio::spawn(async move {
+                let _ingredients = provider.get_ingredients_for_dish(&d).await.unwrap();
+                d.update_with_ingredients(_ingredients);
+                _dishes_with_ingredients.lock().await.push(d);
+            })
+        })
+        .collect();
+
+        for _each_h in handlers {
+            let _ = _each_h.await;
+        }
+
+        _menu._dishes = _dishes_with_ingredients.lock().await.to_vec();
 
         Ok(_menu)
     }

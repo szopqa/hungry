@@ -4,14 +4,14 @@ use reqwest::{Error, get, Url};
 use super::client::{Client};
 
 #[derive(Debug)]
-pub struct KwestiasmakuClient {
+pub struct KSClient {
     _base_uri: reqwest::Url,
     _http_client: reqwest::Client
 }
 
-impl KwestiasmakuClient {
-    pub fn new(_base_uri: &str) -> KwestiasmakuClient {
-        KwestiasmakuClient {
+impl KSClient {
+    pub fn new(_base_uri: &str) -> KSClient {
+        KSClient {
             _base_uri: Url::parse(_base_uri).unwrap(),
             _http_client: reqwest::Client::new()
         }
@@ -20,7 +20,7 @@ impl KwestiasmakuClient {
 
 /* Implementing Client trait only for reference type as we don't want to duplicate clients for same host */
 #[async_trait]
-impl Client for KwestiasmakuClient {
+impl Client for KSClient {
     fn get_base_uri (&self) -> &Url {
         &self._base_uri
     }
