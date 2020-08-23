@@ -14,3 +14,6 @@ Example:
 ```
 hungry --for dinner
 ```
+
+Download:
+https://github.com/szopqa/hungry/releases
