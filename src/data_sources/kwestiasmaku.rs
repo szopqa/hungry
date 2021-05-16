@@ -101,7 +101,61 @@ impl DataSource for KSDataSource {
                         _ingredients_selector: Selector::parse(".field-type-text-long.field-label-hidden li").unwrap()
                     },
                     _sub_page_dishes_category: DishType::LUNCH
-                }
+                },
+
+                // https://www.kwestiasmaku.com/kuchnia_polska/zupy/przepisy.html
+                PageConfig {
+                    _relative_uri: String::from("/kuchnia_polska/zupy/przepisy.html"),
+                    _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
+                    _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
+                    _sub_page_config: SubPageConfig {
+                        _ingredients_selector: Selector::parse(".field-type-text-long.field-label-hidden li").unwrap()
+                    },
+                    _sub_page_dishes_category: DishType::DINNER
+                },
+
+                // https://www.kwestiasmaku.com/przepisy/kolacje
+                PageConfig {
+                    _relative_uri: String::from("/przepisy/kolacje"),
+                    _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
+                    _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
+                    _sub_page_config: SubPageConfig {
+                        _ingredients_selector: Selector::parse(".field-type-text-long.field-label-hidden li").unwrap()
+                    },
+                    _sub_page_dishes_category: DishType::SUPPER
+                },
+
+                // https://www.kwestiasmaku.com/przepisy/wrapy
+                PageConfig {
+                    _relative_uri: String::from("/przepisy/wrapy"),
+                    _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
+                    _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
+                    _sub_page_config: SubPageConfig {
+                        _ingredients_selector: Selector::parse(".field-type-text-long.field-label-hidden li").unwrap()
+                    },
+                    _sub_page_dishes_category: DishType::SUPPER
+                },
+
+                // https://www.kwestiasmaku.com/przepisy/fitburgery
+                PageConfig {
+                    _relative_uri: String::from("/przepisy/fitburgery"),
+                    _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
+                    _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
+                    _sub_page_config: SubPageConfig {
+                        _ingredients_selector: Selector::parse(".field-type-text-long.field-label-hidden li").unwrap()
+                    },
+                    _sub_page_dishes_category: DishType::SUPPER
+                },
+
+                PageConfig {
+                    _relative_uri: String::from("/przepisy/wrapy"),
+                    _menu_items_selector: Selector::parse(".views-field-title a").unwrap(),
+                    _next_page_selector: Selector::parse("#block-system-main .last a").unwrap(), 
+                    _sub_page_config: SubPageConfig {
+                        _ingredients_selector: Selector::parse(".field-type-text-long.field-label-hidden li").unwrap()
+                    },
+                    _sub_page_dishes_category: DishType::SUPPER
+                },
             ]
         }
     }
@@ -117,7 +171,7 @@ impl DataSource for KSDataSource {
                 .collect();
         
         if _sub_pages_for_chosen_dish_type.is_empty() {
-            return Ok(Menu {_dish_type: _dish_type, _dishes: vec![] });
+            return Ok(Menu {_dish_type, _dishes: vec![] });
         }
 
         let _sub_pages_providers: Vec<KSDataProvider<KSClient>> = _sub_pages_for_chosen_dish_type
@@ -148,7 +202,7 @@ impl DataSource for KSDataSource {
         }
 
         let _dishes = &*_dishes_mutex_guard.lock().await;
-        Ok(Menu {_dish_type: _dish_type, _dishes: _dishes.to_vec()})
+        Ok(Menu {_dish_type, _dishes: _dishes.to_vec()})
     }
 
     async fn get_ingredients_for_menu(&self, mut _menu: Menu) -> Result<Menu, Error> {

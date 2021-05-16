@@ -18,7 +18,6 @@ impl KSClient {
     }
 }
 
-/* Implementing Client trait only for reference type as we don't want to duplicate clients for same host */
 #[async_trait]
 impl Client for KSClient {
     fn get_base_uri (&self) -> &Url {

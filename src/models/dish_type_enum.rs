@@ -5,7 +5,8 @@ use strum_macros::EnumIter; // 0.17.1
 pub enum DishType {
     BREAKFAST,
     DINNER,
-    LUNCH
+    LUNCH,
+    SUPPER
 }
 
 impl From <&str> for DishType {
@@ -15,6 +16,7 @@ impl From <&str> for DishType {
             "dinner" => DishType::DINNER,
             "breakfast" => DishType::BREAKFAST,
             "lunch" => DishType::LUNCH,
+            "supper" => DishType::SUPPER,
             _ => {
                 let mut error_msg = String::from("Invalid dish type value. Only following values are allowed: \n");
                 for allowed_dish_type in DishType::iter() {

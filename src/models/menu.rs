@@ -16,7 +16,7 @@ pub struct MenuItem {
 }
 
 impl MenuItem {
-    pub fn update_with_ingredients(&mut self, _ingredients: Vec<Ingredient>) -> () {
+    pub fn update_with_ingredients(&mut self, _ingredients: Vec<Ingredient>) {
         self._ingredients = _ingredients;
     }
 }
@@ -48,7 +48,7 @@ impl Menu {
         }
     }
 
-    fn describe_single_menu_item(_menu_item: &MenuItem) -> () {
+    fn describe_single_menu_item(_menu_item: &MenuItem)  {
         println!("{}\n", _menu_item._dish_name.to_uppercase());
         println!(
             "      Full recipe available at: \n        {}\n",
@@ -60,7 +60,7 @@ impl Menu {
         }
     }
 
-    pub fn describe(&self) -> () {
+    pub fn describe(&self)  {
         println!(
             "\nMenu for {:?} containing {} elements",
             self._dish_type,
@@ -68,7 +68,7 @@ impl Menu {
         );
 
         for _each_menu_item in &self._dishes {
-            println!("");
+            println!();
             Self::describe_single_menu_item(&_each_menu_item);
         }
     }
